@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { InlineField, Input, RadioButtonGroup, Stack, TextArea } from '@grafana/ui';
+import { InlineField, Input, RadioButtonGroup, TextArea } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { IrisDataSourceOptions, IrisQuery, QueryFormat } from '../types';
@@ -27,7 +27,7 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
   };
 
   return (
-    <Stack direction="column" gap={1}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <InlineField label="Format" labelWidth={14}>
         <RadioButtonGroup<QueryFormat>
           id="query-editor-format"
@@ -39,6 +39,7 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
       <InlineField label="Row limit" labelWidth={14}>
         <Input
           id="query-editor-row-limit"
+          aria-label="Row limit"
           onChange={onRowLimitChange}
           value={query.rowLimit ?? ''}
           width={16}
@@ -50,12 +51,13 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
       <InlineField label="SQL" labelWidth={14} grow required>
         <TextArea
           id="query-editor-raw-sql"
+          aria-label="SQL"
           onBlur={onRunQuery}
           onChange={onRawSqlChange}
           value={query.rawSql ?? ''}
           rows={8}
         />
       </InlineField>
-    </Stack>
+    </div>
   );
 }

@@ -1,50 +1,190 @@
-<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin. Uncomment and replace the content here before publishing.
+# InterSystems IRIS
 
-Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
+Read-only SQL datasource for querying InterSystems IRIS from Grafana panels, Explore, and Grafana-managed alerts.
 
-# IRIS
+This plugin uses the Grafana backend plugin runtime and connects to IRIS through the Go `database/sql` driver. It is intended for SQL queries that return table or time series data.
 
-<!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
+## Configuration
 
-**BEFORE YOU BEGIN**
-- Ensure all links are absolute URLs so that they will work when the README is displayed within Grafana and Grafana.com
-- Be inspired ✨
-  - [grafana-polystat-panel](https://github.com/grafana/grafana-polystat-panel)
-  - [volkovlabs-variable-panel](https://github.com/volkovlabs/volkovlabs-variable-panel)
+Create a datasource and set the IRIS connection fields:
 
-**ADD SOME BADGES**
+- Host: IRIS server host, for example `localhost` or `iris`
+- Port: IRIS SuperServer port, usually `1972`
+- Namespace: IRIS namespace, for example `USER`
+- Username: IRIS SQL user
+- Password: stored in Grafana secure JSON data
+- Query timeout: backend query timeout in seconds
+- Row limit: maximum rows returned by default
+- Max open connections, max idle connections, connection lifetime: backend connection pool settings
 
-Badges convey useful information at a glance for users whether in the Catalog or viewing the source code. You can use the generator on [Shields.io](https://shields.io/badges/dynamic-json-badge) together with the Grafana.com API
-to create dynamic badges that update automatically when you publish a new version to the marketplace.
+The datasource user should be read-only. The plugin also blocks non-read SQL as a safety layer, but database permissions remain the primary security boundary.
 
-- For the URL parameter use `https://grafana.com/api/plugins/your-plugin-id`.
-- Example queries:
-  - Downloads: `$.downloads`
-  - Catalog Version: `$.version`
-  - Grafana Dependency: `$.grafanaDependency`
-  - Signature Type: `$.versionSignatureType`
-- Optionally, for the logo parameter use `grafana`.
+## Query Formats
 
-Full example: ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-polystat-panel&label=Marketplace&prefix=v&color=F47A20)
+The query editor has two formats:
 
-Consider other [badges](https://shields.io/badges) as you feel appropriate for your project.
+- Table: use for regular SQL result sets.
+- Time series: use when the result contains a time column and one or more numeric value columns.
 
-## Overview / Introduction
-Provide one or more paragraphs as an introduction to your plugin to help users understand why they should use it.
+The backend accepts SQL beginning with `SELECT` or `WITH`. Multiple statements and write/DDL keywords such as `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, and `CREATE` are blocked.
 
-Consider including screenshots:
-- in [plugin.json](https://grafana.com/developers/plugin-tools/reference/plugin-json#info) include them as relative links.
-- in the README ensure they are absolute URLs.
+## Table Query Example
 
-## Requirements
-List any requirements or dependencies they may need to run the plugin.
+Create an IRIS table with mixed column types:
 
-## Getting Started
-Provide a quick start on how to configure and use the plugin.
+```sql
+CREATE TABLE SQLUser.grafana_iris_table_example (
+  id INTEGER,
+  created_at TIMESTAMP,
+  service VARCHAR(50),
+  status VARCHAR(20),
+  value DOUBLE
+);
+```
 
-## Documentation
-If your project has dedicated documentation available for users, provide links here. For help in following Grafana's style recommendations for technical documentation, refer to our [Writer's Toolkit](https://grafana.com/docs/writers-toolkit/).
+Insert sample rows:
 
-## Contributing
-Do you want folks to contribute to the plugin or provide feedback through specific means? If so, tell them how!
--->
+```sql
+INSERT INTO SQLUser.grafana_iris_table_example
+  (id, created_at, service, status, value)
+VALUES
+  (1, {ts '2026-07-07 10:00:00'}, 'orders', 'ok', 42.5);
+
+INSERT INTO SQLUser.grafana_iris_table_example
+  (id, created_at, service, status, value)
+VALUES
+  (2, {ts '2026-07-07 10:05:00'}, 'billing', 'warning', 18.75);
+
+INSERT INTO SQLUser.grafana_iris_table_example
+  (id, created_at, service, status, value)
+VALUES
+  (3, {ts '2026-07-07 10:10:00'}, 'shipping', 'ok', 31.2);
+```
+
+Set the query format to **Table** and query:
+
+```sql
+SELECT
+  id,
+  created_at,
+  service,
+  status,
+  value
+FROM SQLUser.grafana_iris_table_example
+WHERE $__timeFilter(created_at)
+ORDER BY created_at
+```
+
+Grafana renders one table row per SQL row. `created_at` is returned as a time field, `value` as a numeric field, and `service`/`status` as string fields.
+
+## Time Series Example
+
+Create an IRIS table with a real `TIMESTAMP` column and a numeric value column:
+
+```sql
+CREATE TABLE SQLUser.grafana_iris_timeseries (
+  id INTEGER,
+  created_at TIMESTAMP,
+  metric VARCHAR(50),
+  value DOUBLE
+);
+```
+
+Insert sample rows:
+
+```sql
+INSERT INTO SQLUser.grafana_iris_timeseries
+  (id, created_at, metric, value)
+VALUES
+  (1, {ts '2026-07-07 10:00:00'}, 'temperature', 21.5);
+
+INSERT INTO SQLUser.grafana_iris_timeseries
+  (id, created_at, metric, value)
+VALUES
+  (2, {ts '2026-07-07 10:01:00'}, 'temperature', 22.1);
+
+INSERT INTO SQLUser.grafana_iris_timeseries
+  (id, created_at, metric, value)
+VALUES
+  (3, {ts '2026-07-07 10:02:00'}, 'temperature', 22.8);
+```
+
+Set the query format to **Time series** and query:
+
+```sql
+SELECT
+  created_at,
+  value
+FROM SQLUser.grafana_iris_timeseries
+WHERE
+  metric = 'temperature'
+  AND $__timeFilter(created_at)
+ORDER BY created_at
+```
+
+Grafana receives `created_at` as a time field and `value` as a numeric field.
+
+For multiple named series, include a text label column:
+
+```sql
+SELECT
+  created_at,
+  metric,
+  value
+FROM SQLUser.grafana_iris_timeseries
+WHERE $__timeFilter(created_at)
+ORDER BY metric, created_at
+```
+
+## Grouped Time Series Example
+
+Use `$__timeGroup(column, interval)` to bucket timestamps. Supported interval suffixes are `s`, `m`, `h`, and `d`.
+
+```sql
+SELECT
+  $__timeGroup(created_at, $__interval) AS bucket,
+  AVG(value) AS value
+FROM SQLUser.grafana_iris_timeseries
+WHERE
+  metric = 'temperature'
+  AND $__timeFilter(created_at)
+GROUP BY $__timeGroup(created_at, $__interval)
+ORDER BY bucket
+```
+
+You can also use a fixed interval:
+
+```sql
+SELECT
+  $__timeGroup(created_at, 5m) AS bucket,
+  AVG(value) AS value
+FROM SQLUser.grafana_iris_timeseries
+WHERE $__timeFilter(created_at)
+GROUP BY $__timeGroup(created_at, 5m)
+ORDER BY bucket
+```
+
+## Supported Macros
+
+The plugin expands these macros before sending SQL to IRIS:
+
+- `$__timeFilter(column)`: expands to an inclusive `column >= from AND column <= to` filter using IRIS timestamp literals.
+- `$__timeFrom(column)`: expands to `column >= from`.
+- `$__timeTo(column)`: expands to `column <= to`.
+- `$__interval`: Grafana query interval.
+- `$__interval_ms`: Grafana query interval in milliseconds.
+- `$__timeGroup(column, interval)`: groups timestamps with IRIS `DATEADD` and `DATEDIFF`.
+
+Unsupported `$__timeGroup` interval units return a query error.
+
+## Local Development Notes
+
+For local Docker development, the included Compose stack exposes:
+
+- Grafana: `http://localhost:3000`
+- IRIS SuperServer: `localhost:1972`
+- IRIS management portal: `http://localhost:52773`
+
+The local datasource is provisioned for namespace `USER` with username `_SYSTEM` and the dev-only password from the repository's Docker setup.
+
+Until the upstream IRIS Go driver PR is accepted, this plugin replaces `github.com/caretdev/go-irisnative` with `github.com/grongierisc/go-irisnative`.
