@@ -103,7 +103,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, err.Error())
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	rowLimit := settings.RowLimit
 	if model.RowLimit != nil && *model.RowLimit > 0 {

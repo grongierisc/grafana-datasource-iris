@@ -27,7 +27,9 @@ func TestIRISIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open IRIS: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		_ = db.Close()
+	}()
 
 	ds := &Datasource{
 		db: db,
