@@ -6,7 +6,7 @@ Read-only SQL datasource plugin for querying InterSystems IRIS from Grafana dash
 
 This is a local-development plugin. It is configured to run unsigned in the included Docker Compose environment and is not packaged for the public Grafana plugin catalog.
 
-The backend uses `github.com/caretdev/go-irisnative`, an alpha community `database/sql` driver for IRIS. The driver use is isolated in the backend connection layer so the connection strategy can be replaced later if needed.
+The backend uses `github.com/caretdev/go-irisnative`, an alpha community `database/sql` driver for IRIS. Until the upstream driver PR is accepted, the module is replaced with `github.com/grongierisc/go-irisnative` to correctly decode IRIS numeric list values and expose SQL column metadata. The driver use is isolated in the backend connection layer so the connection strategy can be replaced later if needed.
 
 ## Prerequisites
 

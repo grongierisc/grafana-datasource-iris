@@ -2,6 +2,8 @@ module github.com/grongierisc/grafana-datasource-iris
 
 go 1.25.5
 
+replace github.com/caretdev/go-irisnative => github.com/grongierisc/go-irisnative v0.0.0-20260707132027-9c461bc203c0
+
 require (
 	github.com/caretdev/go-irisnative v0.2.1
 	github.com/grafana/grafana-plugin-sdk-go v0.285.0
@@ -56,7 +58,6 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/unknwon/bra v0.0.0-20200517080246-1e3013ecaff8 // indirect
 	github.com/unknwon/com v1.0.1 // indirect
 	github.com/unknwon/log v0.0.0-20150304194804-e617c87089d3 // indirect

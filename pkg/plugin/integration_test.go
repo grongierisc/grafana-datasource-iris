@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/caretdev/go-irisnative"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grongierisc/grafana-datasource-iris/pkg/models"
 )
 
@@ -41,10 +42,16 @@ func TestIRISIntegration(t *testing.T) {
 		Format: "table",
 	}, 1)
 
-	queryAndExpectFrame(t, ds, ctx, queryModel{
+	timeFrame := queryAndExpectFrame(t, ds, ctx, queryModel{
 		RawSQL: "SELECT {ts '2026-07-07 10:00:00'} AS created_at, 42.5 AS value WHERE $__timeFilter({ts '2026-07-07 10:00:00'})",
 		Format: "time_series",
 	}, 2)
+	if got := timeFrame.Fields[0].Type(); got != data.FieldTypeTime && got != data.FieldTypeNullableTime {
+		t.Fatalf("expected time field, got %s", got)
+	}
+	if got := timeFrame.Fields[1].Type(); got != data.FieldTypeFloat64 && got != data.FieldTypeNullableFloat64 {
+		t.Fatalf("expected float64 value field, got %s", got)
+	}
 
 	blockedPayload, err := json.Marshal(queryModel{RawSQL: "DROP TABLE grafana_iris_plugin_test"})
 	if err != nil {
@@ -71,13 +78,23 @@ func TestIRISIntegration(t *testing.T) {
 		t.Fatalf("insert setup row: %v", err)
 	}
 
-	queryAndExpectFrame(t, ds, ctx, queryModel{
+	frame := queryAndExpectFrame(t, ds, ctx, queryModel{
 		RawSQL: fmt.Sprintf("SELECT id, value FROM %s", tableName),
 		Format: "table",
 	}, 2)
+	if got := frame.Fields[1].Type(); got != data.FieldTypeFloat64 && got != data.FieldTypeNullableFloat64 {
+		t.Fatalf("expected float64 value field, got %s", got)
+	}
+	value, ok := frame.ConcreteAt(1, 0)
+	if !ok {
+		t.Fatal("expected non-null value field")
+	}
+	if fmt.Sprint(value) != "42.5" {
+		t.Fatalf("expected DOUBLE value 42.5, got %#v", value)
+	}
 }
 
-func queryAndExpectFrame(t *testing.T, ds *Datasource, ctx context.Context, model queryModel, fieldCount int) {
+func queryAndExpectFrame(t *testing.T, ds *Datasource, ctx context.Context, model queryModel, fieldCount int) *data.Frame {
 	t.Helper()
 
 	payload, err := json.Marshal(model)
@@ -99,4 +116,5 @@ func queryAndExpectFrame(t *testing.T, ds *Datasource, ctx context.Context, mode
 	if len(resp.Frames) != 1 || len(resp.Frames[0].Fields) != fieldCount {
 		t.Fatalf("expected one frame with two fields, got %#v", resp.Frames)
 	}
+	return resp.Frames[0]
 }
