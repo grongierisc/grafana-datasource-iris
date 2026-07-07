@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "InterSystems IRIS",
+  "id": "grongierisc-iris-datasource",
+  "metrics": true,
+  "backend": true,
+  "executable": "gpx_grongierisc_iris_datasource",
+  "alerting": true,
+  "info": {
+    "description": "Read-only SQL datasource for InterSystems IRIS.",
+    "author": {
+      "name": "Guillaume Rongier"
+    },
+    "keywords": ["datasource", "sql", "intersystems", "iris"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=10.0.0",
+    "plugins": []
+  }
+}

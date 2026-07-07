@@ -1,0 +1,26 @@
+services:
+  grafana:
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    depends_on:
+      - iris
+
+  iris:
+    image: ${IRIS_IMAGE:-intersystems/iris-community:latest-em}
+    container_name: grongierisc-iris
+    ports:
+      - 1972:1972/tcp
+      - 52773:52773/tcp
+    volumes:
+      - iris-data:/dur
+    secrets:
+      - iris_password
+    command: ['--password-file', '/run/secrets/iris_password']
+
+volumes:
+  iris-data:
+
+secrets:
+  iris_password:
+    file: ./docker/iris-password.txt

@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: 'InterSystems IRIS'
+    type: 'grongierisc-iris-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      host: iris
+      port: 1972
+      namespace: USER
+      username: _SYSTEM
+      queryTimeoutSeconds: 30
+      rowLimit: 1000
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetimeSeconds: 1800
+    secureJsonData:
+      password: 'grafana-iris-dev-password'
