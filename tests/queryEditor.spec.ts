@@ -20,8 +20,14 @@ test('should trigger new query when row limit changes', async ({ panelEditPage, 
 test('data query should return a table from IRIS SQL', async ({ panelEditPage, readProvisionedDataSource }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
-  await panelEditPage.getQueryEditorRow('A').getByRole('textbox', { name: 'SQL' }).fill('SELECT 1 AS value');
   await panelEditPage.setVisualization('Table');
-  await expect(panelEditPage.refreshPanel()).toBeOK();
+
+  const sqlEditor = panelEditPage.getQueryEditorRow('A').getByRole('textbox', { name: 'SQL' });
+  await sqlEditor.fill('SELECT 1 AS value');
+  const queryResponse = panelEditPage.waitForQueryDataResponse((response) => {
+    return response.request().postData()?.includes('SELECT 1 AS value') ?? false;
+  });
+  await sqlEditor.blur();
+  await expect(queryResponse).toBeOK();
   await expect(panelEditPage.panel.data).toContainText(['1']);
 });
