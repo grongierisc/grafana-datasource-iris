@@ -2,10 +2,8 @@ module github.com/grongierisc/grafana-datasource-iris
 
 go 1.25.5
 
-replace github.com/caretdev/go-irisnative => github.com/grongierisc/go-irisnative v0.0.0-20260707132027-9c461bc203c0
-
 require (
-	github.com/caretdev/go-irisnative v0.2.1
+	github.com/caretdev/go-irisnative v0.0.0-20260707231036-97ff78dcce8a
 	github.com/grafana/grafana-plugin-sdk-go v0.285.0
 )
 

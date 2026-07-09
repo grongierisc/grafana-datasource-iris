@@ -186,5 +186,3 @@ For local Docker development, the included Compose stack exposes:
 - IRIS management portal: `http://localhost:52773`
 
 The local datasource is provisioned for namespace `USER` with username `_SYSTEM` and the dev-only password from the repository's Docker setup.
-
-Until the upstream IRIS Go driver PR is accepted, this plugin replaces `github.com/caretdev/go-irisnative` with `github.com/grongierisc/go-irisnative`.
