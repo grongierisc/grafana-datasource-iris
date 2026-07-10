@@ -2,21 +2,6 @@
 
 Read-only SQL datasource plugin for querying InterSystems IRIS from Grafana dashboards, Explore, and Grafana-managed alerts.
 
-## Status
-
-This project is preparing for public Grafana plugin catalog submission. It builds and runs as an unsigned plugin in the included Docker Compose environment, and it is structured for a future signed release.
-
-Before a public catalog or Marketplace submission, finish the release metadata and packaging work:
-
-- Review the catalog screenshots and project links in `src/plugin.json`.
-- Move `CHANGELOG.md` from `1.0.0 (Unreleased)` to a dated release entry.
-- Build a release archive with backend binaries for the supported operating systems and architectures.
-- Run the Grafana plugin validator against the ZIP archive.
-- Submit the archive URL, source URL, SHA1 hash, and testing guidance to Grafana Labs for review.
-- Sign the public plugin only after Grafana Labs approves the submission and grants a signature level.
-
-The backend uses `github.com/caretdev/go-irisnative`, a community `database/sql` driver for IRIS. Driver usage is isolated in the backend connection layer so the connection strategy can be replaced later if needed.
-
 ## Requirements
 
 - Grafana 10.0.0 or later.
@@ -162,40 +147,3 @@ npm run e2e
 
 Any change to `src/plugin.json` requires restarting Grafana.
 
-## Packaging and publication
-
-For local release packaging, build the frontend and backend, then package the built plugin under the plugin ID:
-
-```bash
-npm ci
-npm run build
-mage -v
-rm -rf package
-mkdir -p package
-cp -R dist package/grongierisc-iris-datasource
-(cd package && zip -r ../grongierisc-iris-datasource-1.0.0.zip grongierisc-iris-datasource)
-shasum -a 1 grongierisc-iris-datasource-1.0.0.zip
-```
-
-For public catalog submission, Grafana Labs currently reviews the plugin before public signing is available. Submit the packaged ZIP URL, source URL, SHA1 hash, and test guidance through the Grafana Cloud plugin submission flow.
-
-Grafana Marketplace is the optional commercial distribution path inside the Grafana plugin catalog. For a free community release, use the standard public catalog submission flow.
-
-After approval, export a Grafana access policy token with `plugins:write` scope and sign the plugin:
-
-```bash
-export GRAFANA_ACCESS_POLICY_TOKEN=<token>
-npm run sign
-```
-
-For private distribution, pass the expected Grafana root URLs to the signing command:
-
-```bash
-npm run sign -- --rootUrls https://example.com/grafana
-```
-
-Publishing references:
-
-- [Package a plugin](https://grafana.com/developers/plugin-tools/publish-a-plugin/package-a-plugin)
-- [Sign a plugin](https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin)
-- [Publish or update a plugin](https://grafana.com/developers/plugin-tools/publish-a-plugin/publish-a-plugin)
