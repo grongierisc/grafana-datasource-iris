@@ -4,6 +4,20 @@ Read-only SQL datasource for querying InterSystems IRIS from Grafana panels, Exp
 
 This plugin uses the Grafana backend plugin runtime and connects to IRIS through the Go `database/sql` driver. It is intended for SQL queries that return table or time series data.
 
+## Requirements
+
+- Grafana 10.0.0 or later.
+- InterSystems IRIS with SuperServer/xDBC access enabled.
+- An IRIS SQL user with `SELECT` privileges on the schemas and tables you want to query.
+
+Use a read-only database account in production. The plugin blocks non-read SQL as a safety layer, but IRIS permissions remain the primary security boundary.
+
+## Installation
+
+Install the plugin from a signed release archive or from the Grafana plugin catalog when available.
+
+For local development and review, this repository includes a Docker Compose stack that runs Grafana in development mode and allows the unsigned plugin ID `grongierisc-iris-datasource`.
+
 ## Configuration
 
 Create a datasource and set the IRIS connection fields:
@@ -17,7 +31,7 @@ Create a datasource and set the IRIS connection fields:
 - Row limit: maximum rows returned by default
 - Max open connections, max idle connections, connection lifetime: backend connection pool settings
 
-The datasource user should be read-only. The plugin also blocks non-read SQL as a safety layer, but database permissions remain the primary security boundary.
+The password is never stored in datasource `jsonData`; Grafana stores it in `secureJsonData`.
 
 ## Query Formats
 
@@ -27,6 +41,8 @@ The query editor has two formats:
 - Time series: use when the result contains a time column and one or more numeric value columns.
 
 The backend accepts SQL beginning with `SELECT` or `WITH`. Multiple statements and write/DDL keywords such as `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, and `CREATE` are blocked.
+
+Template variables are interpolated by Grafana before the query is sent to the backend.
 
 ## Table Query Example
 

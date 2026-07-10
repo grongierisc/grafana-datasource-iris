@@ -17,8 +17,38 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "links": [],
-    "screenshots": [],
+    "links": [
+      {
+        "name": "documentation",
+        "url": "https://github.com/grongierisc/grafana-datasource-iris#readme"
+      },
+      {
+        "name": "repository",
+        "url": "https://github.com/grongierisc/grafana-datasource-iris"
+      },
+      {
+        "name": "license",
+        "url": "https://github.com/grongierisc/grafana-datasource-iris/blob/main/LICENSE"
+      },
+      {
+        "name": "raise issue",
+        "url": "https://github.com/grongierisc/grafana-datasource-iris/issues"
+      }
+    ],
+    "screenshots": [
+      {
+        "name": "Datasource configuration",
+        "path": "img/screenshot-config.jpg"
+      },
+      {
+        "name": "Table query result",
+        "path": "img/screenshot-table.jpg"
+      },
+      {
+        "name": "Time series query result",
+        "path": "img/screenshot-time-series.jpg"
+      }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
