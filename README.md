@@ -27,6 +27,20 @@ This machine previously had Node 18/npm 9 and no local Go or Mage, so use a newe
 - Read-only SQL guard for `SELECT` and `WITH` queries.
 - Grafana time macro expansion for common dashboard queries.
 
+## Screenshots
+
+Datasource configuration:
+
+![Datasource configuration](src/img/screenshot-config.jpg)
+
+Table query in Explore:
+
+![Table query result](src/img/screenshot-table.jpg)
+
+Time series query in Explore:
+
+![Time series query result](src/img/screenshot-time-series.jpg)
+
 ## Local development
 
 Install frontend dependencies:
@@ -83,6 +97,63 @@ Datasource settings:
 - Max open connections, max idle connections, and connection lifetime: backend connection pool settings.
 
 Use database permissions as the primary security boundary. The plugin blocks non-read SQL as a safety layer, but the configured IRIS account should still only have the minimum required `SELECT` privileges.
+
+## Usage
+
+Create a datasource, fill in the IRIS connection fields, then click **Save & test**. For the included Docker Compose stack, use:
+
+- Host: `iris`
+- Port: `1972`
+- Namespace: `USER`
+- Username: `_SYSTEM`
+- Password: `grafana-iris-dev-password`
+
+For a quick smoke test, open Explore and run a table query:
+
+```sql
+SELECT 1 AS value
+```
+
+For a regular table result, set the query format to **Table**:
+
+```sql
+SELECT
+  id,
+  created_at,
+  service,
+  status,
+  value
+FROM SQLUser.grafana_iris_table_example
+WHERE $__timeFilter(created_at)
+ORDER BY created_at
+```
+
+For a graphable result, set the query format to **Time series** and return a timestamp column plus one or more numeric value columns:
+
+```sql
+SELECT
+  created_at,
+  value
+FROM SQLUser.grafana_iris_timeseries
+WHERE
+  metric = 'temperature'
+  AND $__timeFilter(created_at)
+ORDER BY created_at
+```
+
+For grouped time series queries, use `$__timeGroup` with Grafana's interval:
+
+```sql
+SELECT
+  $__timeGroup(created_at, $__interval) AS bucket,
+  AVG(value) AS value
+FROM SQLUser.grafana_iris_timeseries
+WHERE
+  metric = 'temperature'
+  AND $__timeFilter(created_at)
+GROUP BY $__timeGroup(created_at, $__interval)
+ORDER BY bucket
+```
 
 ## Querying
 
@@ -146,4 +217,3 @@ npm run e2e
 ```
 
 Any change to `src/plugin.json` requires restarting Grafana.
-
