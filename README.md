@@ -9,7 +9,7 @@ Read-only SQL datasource plugin for querying InterSystems IRIS from Grafana dash
 - A read-only IRIS SQL account for production use.
 - Node.js compatible with the generated Grafana toolchain. The current scaffold declares `node >=22`.
 - npm 10 or later.
-- Go 1.25.5 or later.
+- Go 1.26.4 or later.
 - Mage.
 - Docker for the local Grafana and IRIS development stack.
 
@@ -207,7 +207,7 @@ IRIS_DSN='iris://_SYSTEM:grafana-iris-dev-password@localhost:1972/USER' go test 
 If you run Go from Docker, attach the test container to the Compose network and use the `iris` service name:
 
 ```bash
-docker run --rm --network grafana-datasource-iris_default -e IRIS_DSN='iris://_SYSTEM:grafana-iris-dev-password@iris:1972/USER' -v "$PWD:/workspace" -w /workspace golang:1.25-bookworm go test ./pkg/plugin -run TestIRISIntegration -v
+docker run --rm --network grafana-datasource-iris_default -e IRIS_DSN='iris://_SYSTEM:grafana-iris-dev-password@iris:1972/USER' -v "$PWD:/workspace" -w /workspace golang:1.26-bookworm go test ./pkg/plugin -run TestIRISIntegration -v
 ```
 
 E2E checks require a running Compose stack and built plugin binaries:
