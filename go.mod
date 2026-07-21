@@ -1,6 +1,6 @@
 module github.com/grongierisc/grafana-datasource-iris
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/caretdev/go-irisnative v0.3.0

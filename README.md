@@ -9,7 +9,7 @@ Read-only SQL datasource plugin for querying InterSystems IRIS from Grafana dash
 - A read-only IRIS SQL account for production use.
 - Node.js compatible with the generated Grafana toolchain. The current scaffold declares `node >=22`.
 - npm 10 or later.
-- Go 1.26.4 or later.
+- Go 1.26.5 or later.
 - Mage.
 - Docker for the local Grafana and IRIS development stack.
 
