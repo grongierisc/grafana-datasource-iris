@@ -89,9 +89,10 @@ jobs:
             echo "has-e2e=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Sign plugin
-        run: npm run sign
-        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
+      # TODO: Remove this step when plugin signing is enabled for public plugins.
+      # - name: Sign plugin
+      #   run: npm run sign
+      #   if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
 
       - name: Get plugin metadata
         id: metadata
