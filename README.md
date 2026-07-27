@@ -41,6 +41,90 @@ Time series query in Explore:
 
 ![Time series query result](src/img/screenshot-time-series.jpg)
 
+## Install in Grafana (not in Marketplace)
+
+Because this plugin is not published on the Grafana Marketplace, install it manually as an unsigned plugin.
+
+### 1) Get plugin files
+
+Pick one method:
+
+- Build from source in this repository:
+
+  ```bash
+  npm install
+  npm run build
+  mage -v build:linux
+  ```
+
+- Or download a packaged release from this repository's GitHub Releases page.
+
+For the public release `v1.0.1`, you can install directly with:
+
+```bash
+PLUGIN_VERSION=1.0.1
+PLUGIN_ZIP=grongierisc-iris-datasource-${PLUGIN_VERSION}.zip
+
+curl -fL -o /tmp/${PLUGIN_ZIP} \
+  https://github.com/grongierisc/grafana-datasource-iris/releases/download/v${PLUGIN_VERSION}/${PLUGIN_ZIP}
+
+EXPECTED_SHA1=$(curl -fsSL \
+  https://github.com/grongierisc/grafana-datasource-iris/releases/download/v${PLUGIN_VERSION}/${PLUGIN_ZIP}.sha1)
+
+ACTUAL_SHA1=$(shasum -a 1 /tmp/${PLUGIN_ZIP} | awk '{print $1}')
+test "${ACTUAL_SHA1}" = "${EXPECTED_SHA1}"
+```
+
+If the `test` command returns no output and exit code `0`, checksum is valid.
+
+After a successful build, use the generated `dist/` content and backend binary for your target OS/architecture.
+
+### 2) Copy plugin to Grafana plugins directory
+
+Create this directory under Grafana's plugins path:
+
+- Folder name: `grongierisc-iris-datasource`
+
+Default plugins path examples:
+
+- Linux package install: `/var/lib/grafana/plugins`
+- Docker: `/var/lib/grafana/plugins` in the container (mount from host)
+- macOS Homebrew: `/opt/homebrew/var/lib/grafana/plugins`
+
+Example:
+
+```bash
+mkdir -p /var/lib/grafana/plugins/grongierisc-iris-datasource
+# copy plugin files into that folder
+```
+
+Example using the downloaded release archive:
+
+```bash
+unzip -o /tmp/${PLUGIN_ZIP} -d /var/lib/grafana/plugins
+```
+
+### 3) Allow unsigned plugin
+
+Add this to your Grafana configuration (`grafana.ini`):
+
+```ini
+[plugins]
+allow_loading_unsigned_plugins = grongierisc-iris-datasource
+```
+
+Or set the equivalent environment variable:
+
+```bash
+GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=grongierisc-iris-datasource
+```
+
+### 4) Restart Grafana
+
+Restart Grafana after copying files and updating settings, then go to **Connections -> Add new connection** and search for **InterSystems IRIS**.
+
+If it does not appear, check Grafana logs for plugin loading errors (missing backend binary, wrong permissions, wrong architecture, or incorrect plugin folder name).
+
 ## Local development
 
 Install frontend dependencies:
